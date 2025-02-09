@@ -157,6 +157,7 @@ function UserManagement() {
   const [editingUser, setEditingUser] = useState(null);
   const [creatingUser, setCreatingUser] = useState(false);
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "" });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     api
@@ -185,6 +186,8 @@ function UserManagement() {
   };
 
   const handleFormSubmit = async () => {
+    if (!validateForm()) return;
+
     try {
       if (creatingUser) {
         await api.post("/users", formData);
@@ -198,6 +201,7 @@ function UserManagement() {
       setCreatingUser(false);
       setEditingUser(null);
       setFormData({ firstName: "", lastName: "", email: "" });
+      setErrors({});
     } catch (error) {
       console.error("Error saving user:", error);
     }
@@ -232,6 +236,25 @@ function UserManagement() {
     }
   };
 
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First Name is required";
+    }
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last Name is required";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   return (
     <Container>
       <DashboardNavBar />
@@ -253,18 +276,25 @@ function UserManagement() {
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             />
+            {errors.firstName && (
+              <p style={{ color: "red", fontSize: "12px" }}>{errors.firstName}</p>
+            )}
+
             <Input
               type="text"
               placeholder="Last Name"
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             />
+            {errors.lastName && <p style={{ color: "red", fontSize: "12px" }}>{errors.lastName}</p>}
+
             <Input
               type="email"
               placeholder="Email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
+            {errors.email && <p style={{ color: "red", fontSize: "12px" }}>{errors.email}</p>}
             <Button onClick={handleCancel}>Cancel</Button>
             <Button onClick={handleFormSubmit}>Submit</Button>
           </FormWrapper>

@@ -250,6 +250,7 @@ function MyContacts() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [file, setFile] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     api
@@ -282,6 +283,8 @@ function MyContacts() {
   };
 
   const handleFormSubmit = async () => {
+    if (!validateForm()) return;
+
     try {
       const formDataToSend = new FormData();
 
@@ -319,6 +322,7 @@ function MyContacts() {
       setViewingContact(false);
       setFormData({ firstName: "", lastName: "", contactNumber: "", email: "" });
       setFile(null);
+      setErrors({});
     } catch (error) {
       console.error("Error saving contact:", error);
     }
@@ -386,6 +390,30 @@ function MyContacts() {
     }
   };
 
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First Name is required";
+    }
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last Name is required";
+    }
+    if (!formData.contactNumber.trim()) {
+      newErrors.contactNumber = "Contact Number is required";
+    } else if (!/^\d{10,15}$/.test(formData.contactNumber)) {
+      newErrors.contactNumber = "Invalid contact number (10-15 digits required)";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   return (
     <Container>
       <DashboardNavBar />
@@ -421,6 +449,10 @@ function MyContacts() {
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
               disabled={viewingContact}
             />
+            {errors.firstName && (
+              <p style={{ color: "red", fontSize: "12px" }}>{errors.firstName}</p>
+            )}
+
             <Input
               type="text"
               placeholder="Last Name"
@@ -428,6 +460,8 @@ function MyContacts() {
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               disabled={viewingContact}
             />
+            {errors.lastName && <p style={{ color: "red", fontSize: "12px" }}>{errors.lastName}</p>}
+
             <Input
               type="text"
               placeholder="Phone"
@@ -435,6 +469,10 @@ function MyContacts() {
               onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
               disabled={viewingContact}
             />
+            {errors.contactNumber && (
+              <p style={{ color: "red", fontSize: "12px" }}>{errors.contactNumber}</p>
+            )}
+
             <Input
               type="email"
               placeholder="Email"
@@ -442,6 +480,7 @@ function MyContacts() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               disabled={viewingContact}
             />
+            {errors.email && <p style={{ color: "red", fontSize: "12px" }}>{errors.email}</p>}
 
             {(creatingContact || editingContact) && (
               <>
@@ -542,7 +581,7 @@ function MyContacts() {
                 setSearchUsers("");
               }}
             >
-              Cancel
+              Close
             </Button>
           </FormWrapper>
         ) : (
