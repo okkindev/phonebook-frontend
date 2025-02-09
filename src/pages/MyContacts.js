@@ -248,7 +248,7 @@ function MyContacts() {
   const [sharingContact, setSharingContact] = useState(null);
   const [searchUsers, setSearchUsers] = useState("");
   const [users, setUsers] = useState([]);
-  const [setSelectedUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [file, setFile] = useState(null);
 
   useEffect(() => {
